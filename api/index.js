@@ -48,7 +48,8 @@ app.use(passport.session())
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL
+    callbackURL: process.env.GOOGLE_CALLBACK_URL,
+    proxy: true
 },
     async (accessToken, refreshToken, profile, done) => {
 
@@ -627,4 +628,5 @@ const PORT = process.env.PORT || 5000
 
 server.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`)
+    console.log(`Google OAuth Callback URL: ${process.env.GOOGLE_CALLBACK_URL}`)
 })
