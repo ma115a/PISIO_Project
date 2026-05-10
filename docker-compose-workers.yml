@@ -1,0 +1,39 @@
+
+x-worker-env: &worker-env
+  MONGO_URI: "mongodb://mongodb:27017/multimedia_db?replicaSet=rs0"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+  MINIO_ENDPOINT: "minio"
+  MINIO_ACCESS_KEY: "admin"
+  MINIO_SECRET_KEY: "password123"
+
+x-worker-template: &worker-template
+  build: ./worker
+  restart: always
+  volumes:
+    - ./worker:/app
+    - /app/node_modules
+
+services:
+  worker-thumbnails:
+    <<: *worker-template
+    environment:
+      <<: *worker-env
+      QUEUE_NAME: "video_thumbnails"
+
+  worker-audio:
+    <<: *worker-template
+    environment:
+      <<: *worker-env
+      QUEUE_NAME: "audio_extract"
+
+  worker-resize:
+    <<: *worker-template
+    environment:
+      <<: *worker-env
+      QUEUE_NAME: "video_resize"
+
+  worker-ocr:
+    <<: *worker-template
+    environment:
+      <<: *worker-env
+      QUEUE_NAME: "ocr_document"
