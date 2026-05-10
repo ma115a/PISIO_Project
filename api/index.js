@@ -542,7 +542,12 @@ app.get('/api/jobs/history', async (req, res) => {
 });
 
 
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
+app.get('/auth/google', (req, res, next) => {
+    passport.authenticate('google', { 
+        scope: ['profile', 'email'],
+        callbackURL: process.env.GOOGLE_CALLBACK_URL 
+    })(req, res, next);
+});
 
 
 
