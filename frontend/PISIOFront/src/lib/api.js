@@ -1,5 +1,7 @@
 import { auth } from './auth.svelte';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 async function checkResponse(response) {
     if (response.status === 401) {
         auth.user = null;
@@ -10,7 +12,7 @@ async function checkResponse(response) {
 
 export async function getAuthStatus() {
     try {
-        const response = await fetch('http://localhost:5000/auth/status', {
+        const response = await fetch(`${API_URL}/auth/status`, {
             headers: {
                 'Accept': 'application/json'
             },
@@ -33,7 +35,7 @@ export async function getAuthStatus() {
 
 export async function getUserHistory(page = 1, limit = 10) {
     try {
-        const response = await fetch(`http://localhost:5000/api/jobs/history?page=${page}&limit=${limit}`, {
+        const response = await fetch(`${API_URL}/api/jobs/history?page=${page}&limit=${limit}`, {
             headers: {
                 'Accept': 'application/json'
             },
@@ -54,7 +56,7 @@ export async function getUserHistory(page = 1, limit = 10) {
 }
 
 export async function register(displayName, email, password) {
-    const response = await fetch('http://localhost:5000/auth/register', {
+    const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -74,7 +76,7 @@ export async function register(displayName, email, password) {
 }
 
 export async function login(email, password) {
-    const response = await fetch('http://localhost:5000/auth/login', {
+    const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -94,7 +96,7 @@ export async function login(email, password) {
 }
 
 export async function logout() {
-    const response = await fetch('http://localhost:5000/auth/logout', {
+    const response = await fetch(`${API_URL}/auth/logout`, {
         method: 'POST',
         credentials: 'include'
     });
@@ -110,7 +112,7 @@ export async function logout() {
 
 export async function abortJob(jobId) {
     try {
-        const response = await fetch(`http://localhost:5000/jobs/abort/${jobId}`, {
+        const response = await fetch(`${API_URL}/jobs/abort/${jobId}`, {
             method: 'POST',
             credentials: 'include'
         });
@@ -133,14 +135,14 @@ export async function uploadFiles(files, tab, type, resolution) {
     let endpoint = ''
 
     if (tab === 'multimedia') {
-        endpoint = 'http://localhost:5000/upload/video'
+        endpoint = `${API_URL}/upload/video`
         formData.append('file', files[0])
         formData.append('type', type)
         if (type === 'VIDEO_RESIZE' && resolution) {
             formData.append('resolution', resolution)
         }
     } else if (tab === 'ocr') {
-        endpoint = 'http://localhost:5000/upload/docs'
+        endpoint = `${API_URL}/upload/docs`
         files.forEach((file) => {
             formData.append('file', file)
         })
@@ -167,7 +169,7 @@ export async function uploadFiles(files, tab, type, resolution) {
 }
 
 export async function downloadFileFromServer(jobId, fileUrl) {
-    const downloadUrl = `http://localhost:5000/download/${jobId}?fileUrl=${encodeURIComponent(fileUrl)}`;
+    const downloadUrl = `${API_URL}/download/${jobId}?fileUrl=${encodeURIComponent(fileUrl)}`;
 
     try {
         const response = await fetch(downloadUrl, { credentials: 'include' });
@@ -195,7 +197,7 @@ export async function downloadFileFromServer(jobId, fileUrl) {
 }
 
 export async function downloadAllFilesFromServer(jobId) {
-    const downloadUrl = `http://localhost:5000/download-all/${jobId}`;
+    const downloadUrl = `${API_URL}/download-all/${jobId}`;
 
     try {
         const response = await fetch(downloadUrl, { credentials: 'include' });

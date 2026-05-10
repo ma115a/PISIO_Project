@@ -84,7 +84,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - ORIGIN=http://localhost:3000
+      - ORIGIN=${FRONTEND_URL}
+      - VITE_API_URL=${VITE_API_URL}
+    env_file:
+      - .env
 
 volumes:
   minio_data:
