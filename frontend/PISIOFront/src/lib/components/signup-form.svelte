@@ -105,7 +105,7 @@
                     class="w-full cursor-pointer"
                     onclick={() =>
                         (window.location.href =
-                            "http://localhost:5000/auth/google")}
+                            (import.meta.env.VITE_API_URL || "http://localhost:5000") + "/auth/google")}
                 >
                     <svg
                         class="mr-2 h-4 w-4"
