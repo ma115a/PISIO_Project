@@ -7,6 +7,13 @@ const mapRange = (value, inMin, inMax, outMin, outMax) => {
     return Math.round(((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin)
 }
 
+const timeToSeconds = (timeStr) => {
+    if (!timeStr) return 0;
+    const parts = timeStr.split(':');
+    if (parts.length !== 3) return 0;
+    return parseFloat(parts[0]) * 3600 + parseFloat(parts[1]) * 60 + parseFloat(parts[2]);
+}
+
 const RESOLUTIONS = {
     '1080p': 1080, '720p': 720, '480p': 480, '360p': 360, '144p': 144
 }
@@ -20,7 +27,7 @@ module.exports = {
                 .videoFilters(["select='not(mod(n,300))'", "scale=320:-1", "tile=3x3"])
                 .frames(1)
                 .on('progress', (p) => {
-                    if (p.percent && onProgress) {
+                    if (p.percent !== undefined && onProgress) {
                         onProgress(mapRange(Math.max(0, Math.min(100, p.percent)), 0, 100, 20, 80))
                     }
                 })
@@ -36,14 +43,22 @@ module.exports = {
 
     AUDIO_EXTRACT: (input, jobId, onProgress, options) => {
         let command;
+        let duration = 0;
         const output = `/tmp/${jobId}_audio.mp3`
         const promise = new Promise((resolve, reject) => {
             command = ffmpeg(input)
                 .noVideo()
                 .audioCodec('libmp3lame')
+                .on('codecData', (data) => {
+                    duration = timeToSeconds(data.duration);
+                })
                 .on('progress', (p) => {
-                    if (p.percent && onProgress) {
-                        onProgress(mapRange(Math.max(0, Math.min(100, p.percent)), 0, 100, 20, 80))
+                    let percent = p.percent;
+                    if ((percent === undefined || percent === 0) && duration > 0) {
+                        percent = (timeToSeconds(p.timemark) / duration) * 100;
+                    }
+                    if (percent !== undefined && onProgress) {
+                        onProgress(mapRange(Math.max(0, Math.min(100, percent)), 0, 100, 20, 80))
                     }
                 })
                 .on('end', () => resolve([output]))
@@ -58,6 +73,7 @@ module.exports = {
 
     VIDEO_RESIZE: (input, jobId, onProgress, options) => {
         let command;
+        let duration = 0;
         const targetRes = options && options.resolution ? options.resolution : '480p'
         const height = RESOLUTIONS[targetRes] || 480
         const output = `/tmp/${jobId}_${height}.mp4`
@@ -65,9 +81,16 @@ module.exports = {
             command = ffmpeg(input)
                 .videoFilters([`scale=-2:${height}`, 'pad=ceil(iw/2)*2:ceil(ih/2)*2'])
                 .videoCodec('libx264')
+                .on('codecData', (data) => {
+                    duration = timeToSeconds(data.duration);
+                })
                 .on('progress', (p) => {
-                    if (p.percent && onProgress) {
-                        onProgress(mapRange(Math.max(0, Math.min(100, p.percent)), 0, 100, 20, 80))
+                    let percent = p.percent;
+                    if ((percent === undefined || percent === 0) && duration > 0) {
+                        percent = (timeToSeconds(p.timemark) / duration) * 100;
+                    }
+                    if (percent !== undefined && onProgress) {
+                        onProgress(mapRange(Math.max(0, Math.min(100, percent)), 0, 100, 20, 80))
                     }
                 })
                 .on('end', () => resolve([output]))

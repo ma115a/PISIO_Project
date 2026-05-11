@@ -22,7 +22,7 @@ let lastUpdate = 0
 
 
 const updateProgress = async (jobId, progress) => {
-    if (progress - lastUpdate >= 5 || progress >= 95 || progress == 100) {
+    if (progress - lastUpdate >= 1 || progress >= 95 || progress == 100) {
         lastUpdate = progress
         console.log(`[Job ${jobId}] Progress: ${progress}`)
         await Job.findByIdAndUpdate(jobId, { progress: progress })
@@ -73,7 +73,8 @@ async function start() {
             if (!msg) return;
 
             const { jobId, fileNames, fileName, type, options } = JSON.parse(msg.content.toString());
-            currentJobId = jobId; // Marker za Control Exchange
+            currentJobId = jobId; 
+            lastUpdate = 0; // Reset progress for the new job
 
             const targets = fileNames || fileName;
             const localPaths = [];
